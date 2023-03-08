@@ -265,8 +265,8 @@ export default function Home() {
             <button
               type="button"
               className={classNames(
-                'w-full rounded-md bg-white py-2.5 px-3.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50',
-                botMoving ? 'cursor-not-allowed opacity-50' : ''
+                'w-full rounded-md bg-white py-2.5 px-3.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300',
+                botMoving ? 'cursor-not-allowed opacity-50' : 'hover:bg-gray-50'
               )}
               disabled={botMoving}
               onClick={() => resetGame()}
@@ -276,8 +276,10 @@ export default function Home() {
             <button
               type="button"
               className={classNames(
-                'w-full rounded-md bg-white py-2.5 px-3.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50',
-                gameOver || botMoving ? 'cursor-not-allowed opacity-50' : ''
+                'w-full rounded-md bg-white py-2.5 px-3.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300',
+                gameOver || botMoving
+                  ? 'cursor-not-allowed opacity-50'
+                  : 'hover:bg-gray-50'
               )}
               disabled={gameOver || botMoving}
               onClick={() => setBoard(invertBoard(board))}
@@ -287,8 +289,10 @@ export default function Home() {
             <button
               type="button"
               className={classNames(
-                'w-full rounded-md bg-white py-2.5 px-3.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50',
-                gameOver || botMoving ? 'cursor-not-allowed opacity-50' : ''
+                'w-full rounded-md bg-white py-2.5 px-3.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300',
+                gameOver || botMoving
+                  ? 'cursor-not-allowed opacity-50'
+                  : 'hover:bg-gray-50'
               )}
               disabled={gameOver || botMoving}
               onClick={() => setTurn((turn) => (turn === 'B' ? 'W' : 'B'))}
@@ -301,8 +305,10 @@ export default function Home() {
           <button
             type="button"
             className={classNames(
-              'w-full rounded-md bg-white py-2.5 px-3.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50',
-              gameOver || botMoving ? 'cursor-not-allowed opacity-50' : ''
+              'w-full rounded-md bg-white py-2.5 px-3.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300',
+              gameOver || botMoving
+                ? 'cursor-not-allowed opacity-50'
+                : 'hover:bg-gray-50'
             )}
             disabled={gameOver || botMoving}
             onClick={() => handleBotMove()}
