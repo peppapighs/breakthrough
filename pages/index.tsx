@@ -22,6 +22,7 @@ export default function Home() {
   const [turn, setTurn] = useState<'B' | 'W'>('W')
   const [movableSquares, setMovableSquares] = useState<number[]>([])
   const [gameOver, setGameOver] = useState(false)
+  const [botMoving, setBotMoving] = useState(false)
 
   const getMovableSquares = (row: number, col: number, piece: string) => {
     const movableSquares = []
@@ -74,6 +75,44 @@ export default function Home() {
     setTurn((turn) => (turn === 'B' ? 'W' : 'B'))
   }
 
+  const handleBotMove = () => {
+    const fetchMove = async () => {
+      const payload = turn === 'B' ? board : invertBoard(board)
+
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload),
+        })
+
+        if (response.ok) {
+          const [src, dst] = await response.json()
+
+          const srcIndex =
+            turn === 'B'
+              ? src[0] * BOARD_COL + src[1]
+              : (BOARD_ROW - src[0] - 1) * BOARD_COL + src[1]
+          const dstIndex =
+            turn === 'B'
+              ? dst[0] * BOARD_COL + dst[1]
+              : (BOARD_ROW - dst[0] - 1) * BOARD_COL + dst[1]
+
+          handleMove(srcIndex, dstIndex)
+        }
+      } catch (error) {
+        console.log(error)
+      }
+
+      setBotMoving(false)
+    }
+
+    setBotMoving(true)
+    fetchMove()
+  }
+
   const isGameOver = (board: string[][]) => {
     let blackCount = 0,
       whiteCount = 0
@@ -105,12 +144,9 @@ export default function Home() {
   }
 
   return (
-    <main className="flex h-screen flex-col items-center bg-gray-100">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <h1 className="mt-8 text-center text-4xl font-bold text-gray-900">
-          Breakthrough 6x6
-        </h1>
-        <h3 className="mt-4 text-center text-2xl font-bold text-gray-900">
+    <main className="flex min-h-screen flex-col items-center bg-gray-100">
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        <h3 className="text-center text-2xl font-bold text-gray-900">
           {gameOver ? 'Winner' : 'Turn'}:{' '}
           {turn === 'B' ? (
             <BlackPawn className="-mt-2 inline-block h-10 w-10" />
@@ -138,7 +174,8 @@ export default function Home() {
                           !movableSquares.includes(
                             rowIndex * BOARD_COL + colIndex
                           )) ||
-                          gameOver
+                          gameOver ||
+                          botMoving
                           ? ''
                           : 'hover:bg-gray-100',
                         selected === rowIndex * BOARD_COL + colIndex
@@ -193,9 +230,10 @@ export default function Home() {
                           !movableSquares.includes(
                             rowIndex * BOARD_COL + colIndex
                           )) ||
-                        gameOver
+                        gameOver ||
+                        botMoving
                       }
-                      draggable={col === turn && !gameOver}
+                      draggable={col === turn && !gameOver && !botMoving}
                     >
                       {col === 'B' ? (
                         <BlackPawn className="-mt-1 h-10 w-10" />
@@ -226,7 +264,11 @@ export default function Home() {
           <div className="flex flex-col items-center space-y-3 sm:flex-row sm:space-x-3 sm:space-y-0">
             <button
               type="button"
-              className="w-full rounded-md bg-white py-2.5 px-3.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
+              className={classNames(
+                'w-full rounded-md bg-white py-2.5 px-3.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50',
+                botMoving ? 'cursor-not-allowed opacity-50' : ''
+              )}
+              disabled={botMoving}
               onClick={() => resetGame()}
             >
               Reset
@@ -235,9 +277,9 @@ export default function Home() {
               type="button"
               className={classNames(
                 'w-full rounded-md bg-white py-2.5 px-3.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50',
-                gameOver ? 'cursor-not-allowed opacity-50' : ''
+                gameOver || botMoving ? 'cursor-not-allowed opacity-50' : ''
               )}
-              disabled={gameOver}
+              disabled={gameOver || botMoving}
               onClick={() => setBoard(invertBoard(board))}
             >
               Invert Board
@@ -246,14 +288,27 @@ export default function Home() {
               type="button"
               className={classNames(
                 'w-full rounded-md bg-white py-2.5 px-3.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50',
-                gameOver ? 'cursor-not-allowed opacity-50' : ''
+                gameOver || botMoving ? 'cursor-not-allowed opacity-50' : ''
               )}
-              disabled={gameOver}
+              disabled={gameOver || botMoving}
               onClick={() => setTurn((turn) => (turn === 'B' ? 'W' : 'B'))}
             >
               Switch Turn
             </button>
           </div>
+        </div>
+        <div className="mt-3">
+          <button
+            type="button"
+            className={classNames(
+              'w-full rounded-md bg-white py-2.5 px-3.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50',
+              gameOver || botMoving ? 'cursor-not-allowed opacity-50' : ''
+            )}
+            disabled={gameOver || botMoving}
+            onClick={() => handleBotMove()}
+          >
+            Make Bot Move
+          </button>
         </div>
       </div>
     </main>
