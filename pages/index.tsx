@@ -1,6 +1,7 @@
 import { useState } from 'react'
 
 import { BlackPawn, WhitePawn } from '@/svg/Pawn'
+import Head from 'next/head'
 
 const BOARD_COL = 6
 const BOARD_ROW = 6
@@ -144,135 +145,180 @@ export default function Home() {
   }
 
   return (
-    <main className="flex min-h-screen flex-col items-center bg-gray-100">
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <h3 className="text-center text-2xl font-bold text-gray-900">
-          {gameOver ? 'Winner' : 'Turn'}:{' '}
-          {turn === 'B' ? (
-            <BlackPawn className="-mt-2 inline-block h-10 w-10" />
-          ) : (
-            <WhitePawn className="-mt-2 inline-block h-10 w-10" />
-          )}
-        </h3>
-        <div className="mt-8">
-          <div className="flex flex-col divide-y divide-gray-200 overflow-hidden rounded-md border border-gray-200 shadow">
-            {board.map((row, rowIndex) => (
-              <div
-                key={rowIndex}
-                className="grid flex-1 grid-cols-6 divide-x divide-gray-200"
-              >
-                {row.map((col, colIndex) => (
-                  <div
-                    key={rowIndex * BOARD_COL + colIndex}
-                    className="aspect-square"
-                  >
-                    <button
-                      type="button"
-                      className={classNames(
-                        'relative flex h-full w-full items-center justify-center bg-white p-3 text-sm font-semibold text-gray-900 shadow-sm ring-inset ring-gray-700',
-                        (col !== turn &&
-                          !movableSquares.includes(
-                            rowIndex * BOARD_COL + colIndex
-                          )) ||
-                          gameOver ||
-                          botMoving
-                          ? ''
-                          : 'hover:bg-gray-100',
-                        selected === rowIndex * BOARD_COL + colIndex
-                          ? 'ring-4'
-                          : 'ring-0'
-                      )}
-                      onClick={() => {
-                        if (
-                          selected !== null &&
-                          movableSquares.includes(
-                            rowIndex * BOARD_COL + colIndex
-                          )
-                        ) {
-                          handleMove(selected, rowIndex * BOARD_COL + colIndex)
-                          return
-                        }
-                        setSelected((selected) => {
-                          if (selected === rowIndex * BOARD_COL + colIndex) {
-                            setMovableSquares([])
-                            return null
+    <>
+      <Head>
+        <title>Breakthrough</title>
+        <meta
+          name="description"
+          content="A Frontend UI for CS2109S Mini Project - Breakthrough"
+        />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="icon" href="/favicon.ico" />
+      </Head>
+      <main className="flex min-h-screen flex-col items-center bg-gray-100">
+        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+          <h3 className="text-center text-2xl font-bold text-gray-900">
+            {gameOver ? 'Winner' : 'Turn'}:{' '}
+            {turn === 'B' ? (
+              <BlackPawn className="-mt-2 inline-block h-10 w-10" />
+            ) : (
+              <WhitePawn className="-mt-2 inline-block h-10 w-10" />
+            )}
+          </h3>
+          <div className="mt-8">
+            <div className="flex flex-col divide-y divide-gray-200 overflow-hidden rounded-md border border-gray-200 shadow">
+              {board.map((row, rowIndex) => (
+                <div
+                  key={rowIndex}
+                  className="grid flex-1 grid-cols-6 divide-x divide-gray-200"
+                >
+                  {row.map((col, colIndex) => (
+                    <div
+                      key={rowIndex * BOARD_COL + colIndex}
+                      className="aspect-square"
+                    >
+                      <button
+                        type="button"
+                        className={classNames(
+                          'relative flex h-full w-full items-center justify-center bg-white p-3 text-sm font-semibold text-gray-900 shadow-sm ring-inset ring-gray-700',
+                          (col !== turn &&
+                            !movableSquares.includes(
+                              rowIndex * BOARD_COL + colIndex
+                            )) ||
+                            gameOver ||
+                            botMoving
+                            ? ''
+                            : 'hover:bg-gray-100',
+                          selected === rowIndex * BOARD_COL + colIndex
+                            ? 'ring-4'
+                            : 'ring-0'
+                        )}
+                        onClick={() => {
+                          if (
+                            selected !== null &&
+                            movableSquares.includes(
+                              rowIndex * BOARD_COL + colIndex
+                            )
+                          ) {
+                            handleMove(
+                              selected,
+                              rowIndex * BOARD_COL + colIndex
+                            )
+                            return
                           }
+                          setSelected((selected) => {
+                            if (selected === rowIndex * BOARD_COL + colIndex) {
+                              setMovableSquares([])
+                              return null
+                            }
+                            setMovableSquares(
+                              getMovableSquares(rowIndex, colIndex, col)
+                            )
+                            return rowIndex * BOARD_COL + colIndex
+                          })
+                        }}
+                        onDragStart={() => {
+                          setSelected(rowIndex * BOARD_COL + colIndex)
                           setMovableSquares(
                             getMovableSquares(rowIndex, colIndex, col)
                           )
-                          return rowIndex * BOARD_COL + colIndex
-                        })
-                      }}
-                      onDragStart={() => {
-                        setSelected(rowIndex * BOARD_COL + colIndex)
-                        setMovableSquares(
-                          getMovableSquares(rowIndex, colIndex, col)
-                        )
-                      }}
-                      onDragOver={(e) => {
-                        if (
-                          movableSquares.includes(
-                            rowIndex * BOARD_COL + colIndex
+                        }}
+                        onDragOver={(e) => {
+                          if (
+                            movableSquares.includes(
+                              rowIndex * BOARD_COL + colIndex
+                            )
                           )
-                        )
-                          e.preventDefault()
-                      }}
-                      onDrop={() => {
-                        if (
-                          selected === null ||
-                          selected === rowIndex * BOARD_COL + colIndex
-                        )
-                          return
-                        handleMove(selected, rowIndex * BOARD_COL + colIndex)
-                      }}
-                      disabled={
-                        (col !== turn &&
-                          !movableSquares.includes(
-                            rowIndex * BOARD_COL + colIndex
-                          )) ||
-                        gameOver ||
-                        botMoving
-                      }
-                      draggable={col === turn && !gameOver && !botMoving}
-                    >
-                      {col === 'B' ? (
-                        <BlackPawn className="-mt-1 h-10 w-10" />
-                      ) : col === 'W' ? (
-                        <WhitePawn className="-mt-1 h-10 w-10" />
-                      ) : null}
-                      <div
-                        className={classNames(
-                          'absolute rounded-full',
-                          col === '_'
-                            ? 'h-4 w-4 bg-gray-700'
-                            : 'inset-0 m-1 border-4 border-gray-700',
-                          movableSquares.includes(
-                            rowIndex * BOARD_COL + colIndex
+                            e.preventDefault()
+                        }}
+                        onDrop={() => {
+                          if (
+                            selected === null ||
+                            selected === rowIndex * BOARD_COL + colIndex
                           )
-                            ? 'opacity-30'
-                            : 'opacity-0'
-                        )}
-                      ></div>
-                    </button>
-                  </div>
-                ))}
-              </div>
-            ))}
+                            return
+                          handleMove(selected, rowIndex * BOARD_COL + colIndex)
+                        }}
+                        disabled={
+                          (col !== turn &&
+                            !movableSquares.includes(
+                              rowIndex * BOARD_COL + colIndex
+                            )) ||
+                          gameOver ||
+                          botMoving
+                        }
+                        draggable={col === turn && !gameOver && !botMoving}
+                      >
+                        {col === 'B' ? (
+                          <BlackPawn className="-mt-1 h-10 w-10" />
+                        ) : col === 'W' ? (
+                          <WhitePawn className="-mt-1 h-10 w-10" />
+                        ) : null}
+                        <span className="sr-only">{col}</span>
+                        <div
+                          className={classNames(
+                            'absolute rounded-full',
+                            col === '_'
+                              ? 'h-4 w-4 bg-gray-700'
+                              : 'inset-0 m-1 border-4 border-gray-700',
+                            movableSquares.includes(
+                              rowIndex * BOARD_COL + colIndex
+                            )
+                              ? 'opacity-30'
+                              : 'opacity-0'
+                          )}
+                        ></div>
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
-        <div className="mt-6">
-          <div className="flex flex-col items-center space-y-3 sm:flex-row sm:space-x-3 sm:space-y-0">
-            <button
-              type="button"
-              className={classNames(
-                'w-full rounded-md bg-white py-2.5 px-3.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300',
-                botMoving ? 'cursor-not-allowed opacity-50' : 'hover:bg-gray-50'
-              )}
-              disabled={botMoving}
-              onClick={() => resetGame()}
-            >
-              Reset
-            </button>
+          <div className="mt-6">
+            <div className="flex flex-col items-center space-y-3 sm:flex-row sm:space-x-3 sm:space-y-0">
+              <button
+                type="button"
+                className={classNames(
+                  'w-full rounded-md bg-white py-2.5 px-3.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300',
+                  botMoving
+                    ? 'cursor-not-allowed opacity-50'
+                    : 'hover:bg-gray-50'
+                )}
+                disabled={botMoving}
+                onClick={() => resetGame()}
+              >
+                Reset
+              </button>
+              <button
+                type="button"
+                className={classNames(
+                  'w-full rounded-md bg-white py-2.5 px-3.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300',
+                  gameOver || botMoving
+                    ? 'cursor-not-allowed opacity-50'
+                    : 'hover:bg-gray-50'
+                )}
+                disabled={gameOver || botMoving}
+                onClick={() => setBoard(invertBoard(board))}
+              >
+                Invert Board
+              </button>
+              <button
+                type="button"
+                className={classNames(
+                  'w-full rounded-md bg-white py-2.5 px-3.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300',
+                  gameOver || botMoving
+                    ? 'cursor-not-allowed opacity-50'
+                    : 'hover:bg-gray-50'
+                )}
+                disabled={gameOver || botMoving}
+                onClick={() => setTurn((turn) => (turn === 'B' ? 'W' : 'B'))}
+              >
+                Switch Turn
+              </button>
+            </div>
+          </div>
+          <div className="mt-3">
             <button
               type="button"
               className={classNames(
@@ -282,41 +328,13 @@ export default function Home() {
                   : 'hover:bg-gray-50'
               )}
               disabled={gameOver || botMoving}
-              onClick={() => setBoard(invertBoard(board))}
+              onClick={() => handleBotMove()}
             >
-              Invert Board
-            </button>
-            <button
-              type="button"
-              className={classNames(
-                'w-full rounded-md bg-white py-2.5 px-3.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300',
-                gameOver || botMoving
-                  ? 'cursor-not-allowed opacity-50'
-                  : 'hover:bg-gray-50'
-              )}
-              disabled={gameOver || botMoving}
-              onClick={() => setTurn((turn) => (turn === 'B' ? 'W' : 'B'))}
-            >
-              Switch Turn
+              Make Bot Move
             </button>
           </div>
         </div>
-        <div className="mt-3">
-          <button
-            type="button"
-            className={classNames(
-              'w-full rounded-md bg-white py-2.5 px-3.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300',
-              gameOver || botMoving
-                ? 'cursor-not-allowed opacity-50'
-                : 'hover:bg-gray-50'
-            )}
-            disabled={gameOver || botMoving}
-            onClick={() => handleBotMove()}
-          >
-            Make Bot Move
-          </button>
-        </div>
-      </div>
-    </main>
+      </main>
+    </>
   )
 }
